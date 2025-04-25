@@ -1,0 +1,37 @@
+name: CI/CD Pipeline for Terraform
+
+on:
+  push:
+    branches:
+      - main   # This triggers the pipeline whenever you push to the `main` branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest   # The OS for the GitHub runner
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2  # This action checks out your repository's code
+
+      - name: Set up AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.ACCESS_KEY_ID }}  # Set this in GitHub Secrets
+          aws-secret-access-key: ${{ secrets.SECRET_ACCESS_KEY }}  # Set this in GitHub Secrets
+          aws-region: ap-south-1
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v1  # This sets up Terraform on the GitHub runner
+        with:
+          terraform_version: '1.0.0'  # You can change tis to any version you prefer
+
+      - name: Terraform Init
+        working-directory: terraform
+        run: terraform init  # This initializes the Terraform configuration
+
+      - name: Terraform Plan
+        working-directory: terraform
+        run: terraform plan  # This shows what Terraform will do without applying changes
+
+      - name: Terraform Apply
+        working-directory: terraform
+        run: terraform apply -auto-approve  # This applies the Terraform configuration automatically
